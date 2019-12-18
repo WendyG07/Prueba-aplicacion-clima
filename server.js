@@ -1,6 +1,8 @@
 const express = require('express');
 const app = express();
-//const axios = require('axios');
+const ubicacion = require('./controlador/ubicacion');
+const clima = require('./controlador/clima');
+const axios = require('axios');
 
 const hbs = require('hbs');
 require('./hbs/helpers');
@@ -17,44 +19,57 @@ app.get('/', function(req, res) {
     res.render('home', {
         ciudadQ: "Quito",
         ciudadG: "Guayaquil",
-        ciudadP: "Paris",
-        ciudadJ: "Japon",
-        temQ: temp1,
-        temG: temp2,
-        temP: temp3,
-        temJ: temp4
+        tempQ: tempQ,
+        tempG: tempG,
+
     });
 });
 
-app.get('/', (req, res) => {
-    res.render('ecuador');
-});
 app.get('/mundo', (req, res) => {
-    res.render('mundo');
+    res.render('mundo', {
+        ciudadP: "Paris",
+        ciudadJ: "Japon",
+        tempP: tempP,
+        tempJ: tempJ
+    });
+
+
 });
 
 app.listen(port, () => {
     console.log(`Escuchando peticiones en el puerto ${port}`);
 });
-let getInfo = async(ciudadQ, ciudadG, ciudadG, ciudadJ) => {
+let getInfo = async(ciudadQ, ciudadG, ciudadP, ciudadJ) => {
     try {
         let coords1 = await ubicacion.getCiudadLatLon(ciudadQ);
-        let temp1 = await clima.getClima(coords1.lat, coords1.lon);
+        let tempQ = await clima.getClima(coords1.lat, coords1.lon);
         let coords2 = await ubicacion.getCiudadLatLon(ciudadG);
-        let temp2 = await clima.getClima(coords2.lat, coords2.lon);
+        let tempG = await clima.getClima(coords2.lat, coords2.lon);
         let coords3 = await ubicacion.getCiudadLatLon(ciudadP);
-        let temp3 = await clima.getClima(coords3.lat, coords3.lon);
+        let tempP = await clima.getClima(coords3.lat, coords3.lon);
         let coords4 = await ubicacion.getCiudadLatLon(ciudadJ);
-        let temp4 = await clima.getClima(coords4.lat, coords4.lon);
+        let tempJ = await clima.getClima(coords4.lat, coords4.lon);
         return {
-            temp1,
-            temp2,
-            temp3,
-            temp4
+            tempQ,
+            tempG,
+            tempP,
+            tempJ
         }
     } catch (error) {
         console.log(`No se puede obtener el clima de: ${pais}`);
     }
 };
+app.use(express.static(__dirname + '/public'));
+let tempQ
+let tempG
+let tempP
+let tempJ
+getInfo("Quito", "Guayaquil", "Paris", "Japon").then(res => {
+    tempQ = res.tempQ;
+    tempG = res.tempG;
+    tempP = res.tempP
+    tempJ = res.tempJ
+    console.log(res.temp1, res.temp2);
+}).catch(err => console.log(err));
 
 //npm install -g heroku
